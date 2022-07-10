@@ -15,9 +15,7 @@ model App {
     name      String   @unique
     createdAt DateTime @default(now())
     updatedAt DateTime @default(now())
-    folders   Folder[]
     apiKeys   ApiKey[]
-
 }
 
 model ApiKey {
@@ -26,21 +24,4 @@ model ApiKey {
     createdAt DateTime @default(now())
     app       App      @relation(fields: [appId], references: [id])
     appId     String
-}
-
-model Folder {
-    id        String   @id @default(cuid())
-    name      String
-    createdAt DateTime @default(now())
-    updatedAt DateTime @updatedAt
-    path      String   @default("/")
-    parent    Folder?  @relation("folders", fields: [parentId], references: [id])
-    parentId  String
-    folders   Folder[] @relation("folders")
-    app       App      @relation(fields: [appId], references: [id])
-    appId     String
-
-    @@unique([path, name, appId])
-    @@index([path])
-    @@index([path, name])
 }
