@@ -36,7 +36,6 @@ export const driveRouter = createRouter()
     input: z.object({ name: z.string(), paths: z.array(z.string()) }),
     async resolve({ ctx: { db }, input }) {
       const path = "/" + input.paths.join("/");
-      console.log(path);
       const app = await db.app.findUnique({
         where: { name: input.name },
         include: { folders: { where: { path } } },
@@ -92,11 +91,11 @@ export const driveRouter = createRouter()
     input: z.string(),
     async resolve({ ctx: { db }, input }) {
       try {
-        const [app] = await Promise.all([
-          db.app.delete({ where: { name: input } }),
-          db.folder.deleteMany({ where: { App: { name: input } } }),
+        await Promise.all([
+          db.apiKey.deleteMany({ where: { app: { name: input } } }),
+          db.folder.deleteMany({ where: { app: { name: input } } }),
         ]);
-        return app;
+        return await db.app.delete({ where: { name: input } });
       } catch (error) {
         throw new TRPCError({ code: "BAD_REQUEST" });
       }

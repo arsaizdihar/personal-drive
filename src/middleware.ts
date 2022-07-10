@@ -3,7 +3,21 @@ import { NextRequest, NextResponse } from "next/server";
 // This function can be marked `async` if using `await` inside
 export async function middleware(request: NextRequest) {
   const url = request.nextUrl;
-  if (url.pathname !== "/" && !url.pathname.startsWith("/[appName]")) {
+  if (url.hostname === "file.arsaizdihar.com") {
+    const oneYear = 60 * 60 * 24 * 365;
+    return NextResponse.rewrite(
+      `https://ars.is3.cloudhost.id${url.pathname}}`,
+      {
+        status: 301,
+        headers: { "Cache-Control": `public, max-age=${oneYear}` },
+      }
+    );
+  }
+  if (
+    url.pathname !== "/" &&
+    !url.pathname.startsWith("/app") &&
+    !url.pathname.startsWith("/keys")
+  ) {
     return NextResponse.next();
   }
   const cookie = request.cookies.get("token");

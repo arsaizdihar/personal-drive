@@ -37,7 +37,7 @@ model Folder {
     parent    Folder?  @relation("folders", fields: [parentId], references: [id])
     parentId  String
     folders   Folder[] @relation("folders")
-    App       App      @relation(fields: [appId], references: [id])
+    app       App      @relation(fields: [appId], references: [id])
     appId     String
 
     @@unique([path, name, appId])
