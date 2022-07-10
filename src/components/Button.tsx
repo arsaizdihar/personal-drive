@@ -3,8 +3,8 @@ import { ButtonHTMLAttributes } from "react";
 type Variant = "primary" | "danger";
 
 const classMap: Record<Variant, string> = {
-  primary: "bg-blue-500 hover:bg-blue-400 text-white",
-  danger: "bg-red-500 hover:bg-red-400 text-white",
+  primary: "bg-blue-500 hover:bg-blue-400 text-white disabled:bg-blue-300",
+  danger: "bg-red-500 hover:bg-red-400 text-white disabled:bg-red-300",
 };
 
 type ButtonProps = ButtonHTMLAttributes<HTMLButtonElement>;

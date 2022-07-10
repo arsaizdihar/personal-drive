@@ -55,7 +55,7 @@ const Home: NextPage = () => {
           name="appName"
           ref={ref}
         />
-        <Button>Create app</Button>
+        <Button disabled={createApp.isLoading}>Create app</Button>
       </form>
     </div>
   );

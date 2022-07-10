@@ -19,7 +19,7 @@ export const driveRouter = createRouter()
       return apps;
     },
   })
-  .query("app", {
+  .query("app.apiKeys", {
     input: z.string(),
     async resolve({ ctx: { db }, input }) {
       const app = await db.app.findUnique({
@@ -29,6 +29,19 @@ export const driveRouter = createRouter()
       if (!app) {
         throw new TRPCError({ code: "NOT_FOUND" });
       }
+      return app;
+    },
+  })
+  .query("app.files", {
+    input: z.object({ name: z.string(), paths: z.array(z.string()) }),
+    async resolve({ ctx: { db }, input }) {
+      const path = "/" + input.paths.join("/");
+      console.log(path);
+      const app = await db.app.findUnique({
+        where: { name: input.name },
+        include: { folders: { where: { path } } },
+      });
+
       return app;
     },
   })
@@ -73,5 +86,19 @@ export const driveRouter = createRouter()
         throw new TRPCError({ code: "NOT_FOUND" });
       }
       return await db.apiKey.delete({ where: { id: input.id } });
+    },
+  })
+  .mutation("deleteApp", {
+    input: z.string(),
+    async resolve({ ctx: { db }, input }) {
+      try {
+        const [app] = await Promise.all([
+          db.app.delete({ where: { name: input } }),
+          db.folder.deleteMany({ where: { App: { name: input } } }),
+        ]);
+        return app;
+      } catch (error) {
+        throw new TRPCError({ code: "BAD_REQUEST" });
+      }
     },
   });
