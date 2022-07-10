@@ -3,6 +3,7 @@ import { NextRequest, NextResponse } from "next/server";
 // This function can be marked `async` if using `await` inside
 export async function middleware(request: NextRequest) {
   const url = request.nextUrl;
+  console.log(url.hostname);
   if (url.hostname === "file.arsaizdihar.com") {
     const oneYear = 60 * 60 * 24 * 365;
     return NextResponse.rewrite(
