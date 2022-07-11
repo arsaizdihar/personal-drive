@@ -1,9 +1,11 @@
 import Error from "next/error";
 import Link from "next/link";
 import { useRouter } from "next/router";
-import React from "react";
+import React, { useRef, useState } from "react";
+import toast from "react-hot-toast";
 import Button from "~/components/Button";
 import Spinner from "~/components/Spinner";
+import { uploadFile } from "~/utils/api/uploadFile";
 import { trpc } from "~/utils/trpc";
 
 function AppPage() {
@@ -20,10 +22,24 @@ function AppPage() {
   });
   const createFolder = trpc.useMutation("drive.createFolder", {
     onSuccess: () => {
-      utils.refetchQueries(["drive.app.files", { name: appName, paths }]);
+      query.refetch();
     },
   });
+  const deleteFolder = trpc.useMutation("drive.deleteFolder", {
+    onSuccess: () => {
+      query.refetch();
+    },
+  });
+  const deleteFile = trpc.useMutation("drive.deleteFile", {
+    onSuccess: () => {
+      query.refetch();
+    },
+  });
+
+  const [progress, setProgress] = useState<number>();
+  const fileRef = useRef<HTMLInputElement>(null);
   const data = query.data;
+  const path = paths.length > 0 ? paths.join("/") + "/" : "";
 
   if (query.error?.data?.httpStatus === 404)
     return <Error statusCode={404}></Error>;
@@ -76,10 +92,49 @@ function AppPage() {
             >
               {folder}
             </Link>
+            <Button
+              variant="danger"
+              onClick={() => {
+                if (confirm("Are you sure?")) {
+                  const promise = deleteFolder.mutateAsync({
+                    appName,
+                    name: folder.slice(0, -1),
+                    path,
+                  });
+
+                  toast.promise(
+                    promise,
+                    {
+                      loading: `Deleting ${folder}...`,
+                      success: (count) =>
+                        `Deleted ${folder} (${count} objects)`,
+                      error: `Failed to delete ${folder}`,
+                    },
+                    { id: "delete-folder" }
+                  );
+                }
+              }}
+            >
+              Delete
+            </Button>
           </li>
         ))}
         {files.map((file) => (
-          <li key={file}>{file}</li>
+          <li key={file.name}>
+            <a href={file.link} target="_blank" rel="noreferrer">
+              {file.name}
+            </a>
+            <Button
+              variant="danger"
+              onClick={() => {
+                if (confirm("Are you sure?")) {
+                  deleteFile.mutate({ appName, path, name: file.name });
+                }
+              }}
+            >
+              Delete
+            </Button>
+          </li>
         ))}
       </ul>
       <Button
@@ -89,13 +144,43 @@ function AppPage() {
             createFolder.mutate({
               appName,
               name,
-              path: paths.length > 0 ? paths.join("/") + "/" : "",
+              path,
             });
           }
         }}
       >
         Create folder
       </Button>
+      <form
+        onSubmit={(e) => {
+          e.preventDefault();
+          const fileList = fileRef.current!.files;
+          if (!fileList) return;
+          const file = fileList[0];
+          if (!file) return;
+          const formData = new FormData();
+          formData.append("file", file);
+          formData.append("appName", appName);
+          formData.append("path", path);
+          uploadFile(formData, (p) => {
+            setProgress((p.loaded / p.total) * 100);
+          }).then((res) => {
+            setProgress(undefined);
+            query.refetch();
+          });
+        }}
+      >
+        <input type="file" ref={fileRef} />
+        <Button type="submit">Upload</Button>
+      </form>
+      {progress !== undefined && (
+        <div className="w-40 max-w-full bg-gray-200 rounded-full h-2.5 dark:bg-gray-700">
+          <div
+            className="bg-blue-600 h-2.5 rounded-full"
+            style={{ width: `${progress}%` }}
+          ></div>
+        </div>
+      )}
     </div>
   );
 }

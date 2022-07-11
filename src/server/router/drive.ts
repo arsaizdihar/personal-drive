@@ -1,7 +1,7 @@
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 import { isAuthValid } from "../../utils/server/jwt";
-import { s3 } from "../s3";
+import { deleteRecursive, s3 } from "../s3";
 import { createRouter } from "./context";
 
 export const driveRouter = createRouter()
@@ -57,12 +57,17 @@ export const driveRouter = createRouter()
       if (!contents || !folders) {
         throw new TRPCError({ code: "NOT_FOUND" });
       }
-      contents.shift();
+      if (contents[0]?.Key === prefix) {
+        contents.shift();
+      }
 
       return {
         app,
         folders: folders.map((folder) => folder.Prefix!.replace(prefix, "")),
-        files: contents.map((file) => file.Key!.replace(prefix, "")),
+        files: contents.map((file) => ({
+          name: file.Key!.replace(prefix, ""),
+          link: `https://file.arsaizdihar.com/${file.Key}`,
+        })),
       };
     },
   })
@@ -137,7 +142,6 @@ export const driveRouter = createRouter()
       }
       const path = input.path ? "/" + input.path : "/";
       const key = `${app.name}${path}${input.name}/`;
-      console.log(key);
       const result = await s3
         .upload({
           Bucket: "ars",
@@ -147,5 +151,48 @@ export const driveRouter = createRouter()
         .promise();
 
       return result.Key;
+    },
+  })
+  .mutation("deleteFolder", {
+    input: z.object({
+      appName: z.string(),
+      path: z.string(),
+      name: z.string(),
+    }),
+    async resolve({ ctx: { db }, input }) {
+      const app = await db.app.findUnique({
+        where: { name: input.appName },
+      });
+      if (!app) {
+        throw new TRPCError({ code: "NOT_FOUND" });
+      }
+      const path = input.path ? "/" + input.path : "/";
+      const key = `${app.name}${path}${input.name}/`;
+      const count = await deleteRecursive("ars", key);
+      return count;
+    },
+  })
+  .mutation("deleteFile", {
+    input: z.object({
+      appName: z.string(),
+      path: z.string(),
+      name: z.string(),
+    }),
+    async resolve({ ctx: { db }, input }) {
+      const app = await db.app.findUnique({
+        where: { name: input.appName },
+      });
+      if (!app) {
+        throw new TRPCError({ code: "NOT_FOUND" });
+      }
+      const path = input.path ? "/" + input.path : "/";
+      const key = `${app.name}${path}${input.name}`;
+      const result = await s3
+        .deleteObject({
+          Bucket: "ars",
+          Key: key,
+        })
+        .promise();
+      return result.DeleteMarker;
     },
   });

@@ -50,14 +50,13 @@ export default async function handler(
     const result = await s3
       .upload({
         Bucket: "ars",
-        Key: `${app.name}/${path}/${file.originalFilename}`,
+        Key: `${app.name}/${path}${file.originalFilename}`,
         Body: fileStream,
         ACL: "public-read",
         ContentType: file.mimetype || undefined,
       })
       .promise();
 
-    console.log(result);
     res.json(result);
   });
 }
