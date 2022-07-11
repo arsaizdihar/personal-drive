@@ -1,10 +1,24 @@
+import { ArrowBackIcon } from "@chakra-ui/icons";
+import {
+  Breadcrumb,
+  BreadcrumbItem,
+  BreadcrumbLink,
+  Button,
+  Container,
+  Flex,
+  Heading,
+  Link as ChakraLink,
+  ListItem,
+  Progress,
+  Spinner,
+  UnorderedList,
+} from "@chakra-ui/react";
+
 import Error from "next/error";
 import Link from "next/link";
 import { useRouter } from "next/router";
-import React, { useRef, useState } from "react";
+import { useRef, useState } from "react";
 import toast from "react-hot-toast";
-import Button from "~/components/Button";
-import Spinner from "~/components/Spinner";
 import { uploadFile } from "~/utils/api/uploadFile";
 import { trpc } from "~/utils/trpc";
 
@@ -13,7 +27,6 @@ function AppPage() {
   const slug = router.query.slug as string[];
   const appName = slug[0]!;
   const paths = slug.length > 1 ? slug.slice(1) : [];
-  const utils = trpc.useContext();
   const query = trpc.useQuery(["drive.app.files", { name: appName, paths }]);
   const deleteApp = trpc.useMutation("drive.deleteApp", {
     onSuccess: () => {
@@ -43,30 +56,34 @@ function AppPage() {
 
   if (query.error?.data?.httpStatus === 404)
     return <Error statusCode={404}></Error>;
-  if (!data) return <Spinner className="fill-blue-600" />;
+  if (!data) return <Spinner />;
   const { app, folders, files } = data;
   return (
-    <div className="max-w-screen-xl px-4 mx-auto my-4 prose prose-sky">
-      <Link href={"/"}>Back</Link>
-      <div className="flex flex-wrap">
+    <Container marginBlock={8}>
+      <Link href="/" passHref>
+        <Button as="a" leftIcon={<ArrowBackIcon />} variant="ghost">
+          Back
+        </Button>
+      </Link>
+      <Breadcrumb>
         {slug.map((name, index) => (
-          <React.Fragment key={index}>
+          <BreadcrumbItem key={index} isCurrentPage={index === slug.length - 1}>
             <Link
               href={{
                 pathname: "/app/[...slug]",
                 query: { slug: slug.slice(0, index + 1) },
               }}
             >
-              {name}
+              <BreadcrumbLink>{name}</BreadcrumbLink>
             </Link>
-            {index < slug.length - 1 && <span className="mx-2">/</span>}
-          </React.Fragment>
+          </BreadcrumbItem>
         ))}
-      </div>
-      <div className="flex items-center gap-4">
-        <h1 className="my-0">{app.name}</h1>
+      </Breadcrumb>
+      <Flex alignItems={"center"} gap={4}>
+        <Heading className="my-0">{app.name}</Heading>
         <Button
-          variant="danger"
+          size={"sm"}
+          colorScheme={"red"}
           onClick={() => {
             const name = prompt(
               `Are you sure? Input "${appName}" to confirm delete.`
@@ -79,21 +96,27 @@ function AppPage() {
         >
           Delete App
         </Button>
-        <Link href={`/keys/${appName}`}>API keys</Link>
-      </div>
-      <ul>
+        <Link href={`/keys/${appName}`} passHref>
+          <Button as="a" colorScheme={"purple"}>
+            API keys
+          </Button>
+        </Link>
+      </Flex>
+      <UnorderedList>
         {folders.map((folder) => (
-          <li key={folder}>
+          <ListItem key={folder} marginBlock={2}>
             <Link
               href={{
                 pathname: "/app/[...slug]",
                 query: { slug: [...slug, folder.slice(0, -1)] },
               }}
             >
-              {folder}
+              <ChakraLink>{folder}</ChakraLink>
             </Link>
             <Button
-              variant="danger"
+              colorScheme={"red"}
+              size={"sm"}
+              marginInline={4}
               onClick={() => {
                 if (confirm("Are you sure?")) {
                   const promise = deleteFolder.mutateAsync({
@@ -117,15 +140,17 @@ function AppPage() {
             >
               Delete
             </Button>
-          </li>
+          </ListItem>
         ))}
         {files.map((file) => (
           <li key={file.name}>
-            <a href={file.link} target="_blank" rel="noreferrer">
+            <ChakraLink href={file.link} target="_blank" rel="noreferrer">
               {file.name}
-            </a>
+            </ChakraLink>
             <Button
-              variant="danger"
+              colorScheme={"red"}
+              size={"sm"}
+              marginInline={4}
               onClick={() => {
                 if (confirm("Are you sure?")) {
                   deleteFile.mutate({ appName, path, name: file.name });
@@ -136,8 +161,9 @@ function AppPage() {
             </Button>
           </li>
         ))}
-      </ul>
+      </UnorderedList>
       <Button
+        colorScheme={"blue"}
         onClick={() => {
           const name = prompt("Input folder name");
           if (name) {
@@ -166,6 +192,7 @@ function AppPage() {
             setProgress((p.loaded / p.total) * 100);
           }).then((res) => {
             setProgress(undefined);
+            fileRef.current!.value = "";
             query.refetch();
           });
         }}
@@ -173,15 +200,8 @@ function AppPage() {
         <input type="file" ref={fileRef} />
         <Button type="submit">Upload</Button>
       </form>
-      {progress !== undefined && (
-        <div className="w-40 max-w-full bg-gray-200 rounded-full h-2.5 dark:bg-gray-700">
-          <div
-            className="bg-blue-600 h-2.5 rounded-full"
-            style={{ width: `${progress}%` }}
-          ></div>
-        </div>
-      )}
-    </div>
+      {progress !== undefined && <Progress value={progress} />}
+    </Container>
   );
 }
 

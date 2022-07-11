@@ -1,7 +1,18 @@
+import {
+  Button,
+  Container,
+  FormControl,
+  FormLabel,
+  Heading,
+  Input,
+  Link as ChakraLink,
+  ListItem,
+  UnorderedList,
+} from "@chakra-ui/react";
+
 import type { NextPage } from "next";
 import Link from "next/link";
 import { useRef } from "react";
-import Button from "~/components/Button";
 import { trpc } from "../utils/trpc";
 
 const Home: NextPage = () => {
@@ -15,22 +26,22 @@ const Home: NextPage = () => {
   const ref = useRef<HTMLInputElement>(null);
 
   return (
-    <div className="max-w-screen-xl px-4 mx-auto my-4 prose prose-sky">
-      <h1>App list</h1>
-      <ul>
+    <Container marginBlock={8}>
+      <Heading>App list</Heading>
+      <UnorderedList>
         {data?.map((app) => (
-          <li key={app.id}>
+          <ListItem key={app.id} marginBlock={2}>
             <Link
               href={{
                 pathname: "/app/[appName]",
                 query: { appName: app.name },
               }}
             >
-              {app.name}
+              <ChakraLink>{app.name}</ChakraLink>
             </Link>
-          </li>
+          </ListItem>
         ))}
-      </ul>
+      </UnorderedList>
       <form
         className="flex gap-4"
         onSubmit={(e) => {
@@ -48,16 +59,26 @@ const Home: NextPage = () => {
           }
         }}
       >
-        <input
-          type="text"
-          placeholder="App name"
-          className="form-input"
-          name="appName"
-          ref={ref}
-        />
-        <Button disabled={createApp.isLoading}>Create app</Button>
+        <FormControl>
+          <FormLabel htmlFor="appName">App Name</FormLabel>
+          <Input
+            type="text"
+            placeholder="App name"
+            name="appName"
+            ref={ref}
+            colorScheme="blue"
+            variant="filled"
+          />
+        </FormControl>
+        <Button
+          disabled={createApp.isLoading}
+          variant="solid"
+          colorScheme={"blue"}
+        >
+          Create app
+        </Button>
       </form>
-    </div>
+    </Container>
   );
 };
 

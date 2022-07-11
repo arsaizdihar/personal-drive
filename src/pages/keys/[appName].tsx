@@ -1,9 +1,9 @@
+import { ArrowBackIcon } from "@chakra-ui/icons";
+import { Button, Container, Spinner } from "@chakra-ui/react";
 import Error from "next/error";
 import Link from "next/link";
 import { useRouter } from "next/router";
 import toast from "react-hot-toast";
-import Button from "~/components/Button";
-import Spinner from "~/components/Spinner";
 import { trpc } from "~/utils/trpc";
 
 function AppPage() {
@@ -39,8 +39,12 @@ function AppPage() {
   if (!query.data) return null;
   const app = query.data;
   return (
-    <div className="max-w-screen-xl px-4 mx-auto my-4 prose prose-sky">
-      <Link href={`/app/${appName}`}>Back</Link>
+    <Container marginBlock={8}>
+      <Link href={`/app/${appName}`} passHref>
+        <Button as="a" leftIcon={<ArrowBackIcon />} variant="ghost">
+          Back
+        </Button>
+      </Link>
       <h1 className="my-0">{app.name}</h1>
       <ul>
         {app.apiKeys.map((apiKey) => {
@@ -72,9 +76,7 @@ function AppPage() {
                 >
                   Delete
                 </Button>
-                {isLoading && (
-                  <Spinner className="fill-blue-600 inline-block w-5 h-5" />
-                )}
+                {isLoading && <Spinner />}
               </div>
             </li>
           );
@@ -97,7 +99,7 @@ function AppPage() {
       >
         Create new
       </Button>
-    </div>
+    </Container>
   );
 }
 
