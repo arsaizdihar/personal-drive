@@ -74,6 +74,7 @@ const Home: NextPage = () => {
           disabled={createApp.isLoading}
           variant="solid"
           colorScheme={"blue"}
+          type="submit"
         >
           Create app
         </Button>
