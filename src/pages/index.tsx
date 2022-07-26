@@ -9,6 +9,7 @@ import {
   ListItem,
   UnorderedList,
 } from "@chakra-ui/react";
+import { useAutoAnimate } from "@formkit/auto-animate/react";
 
 import type { NextPage } from "next";
 import Link from "next/link";
@@ -23,12 +24,13 @@ const Home: NextPage = () => {
       utils.invalidateQueries(["drive.appList"]);
     },
   });
+  const [parent] = useAutoAnimate<HTMLUListElement>();
   const ref = useRef<HTMLInputElement>(null);
 
   return (
     <Container marginBlock={8}>
       <Heading>App list</Heading>
-      <UnorderedList>
+      <UnorderedList ref={parent}>
         {data?.map((app) => (
           <ListItem key={app.id} marginBlock={2}>
             <Link

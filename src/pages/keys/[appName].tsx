@@ -1,5 +1,6 @@
 import { ArrowBackIcon } from "@chakra-ui/icons";
 import { Button, Container, Spinner } from "@chakra-ui/react";
+import { useAutoAnimate } from "@formkit/auto-animate/react";
 import Error from "next/error";
 import Link from "next/link";
 import { useRouter } from "next/router";
@@ -10,6 +11,7 @@ function AppPage() {
   const router = useRouter();
   const appName = router.query.appName as string;
   const query = trpc.useQuery(["drive.app.apiKeys", appName]);
+  const [parent] = useAutoAnimate<HTMLUListElement>();
   const utils = trpc.useContext();
   const { mutateAsync } = trpc.useMutation("drive.createApiKey", {
     onSuccess: (res) => {
@@ -46,7 +48,7 @@ function AppPage() {
         </Button>
       </Link>
       <h1 className="my-0">{app.name}</h1>
-      <ul>
+      <ul ref={parent}>
         {app.apiKeys.map((apiKey) => {
           const isLoading =
             apiKeyDelete.isLoading && apiKeyDelete.variables?.id === apiKey.id;

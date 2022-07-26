@@ -14,6 +14,7 @@ import {
   UnorderedList,
 } from "@chakra-ui/react";
 
+import { useAutoAnimate } from "@formkit/auto-animate/react";
 import Error from "next/error";
 import Link from "next/link";
 import { useRouter } from "next/router";
@@ -50,6 +51,7 @@ function AppPage() {
   });
 
   const [progress, setProgress] = useState<number>();
+  const [parent] = useAutoAnimate<HTMLUListElement>();
   const fileRef = useRef<HTMLInputElement>(null);
   const data = query.data;
   const path = paths.length > 0 ? paths.join("/") + "/" : "";
@@ -102,7 +104,7 @@ function AppPage() {
           </Button>
         </Link>
       </Flex>
-      <UnorderedList>
+      <UnorderedList ref={parent}>
         {folders.map((folder) => (
           <ListItem key={folder} marginBlock={2}>
             <Link
