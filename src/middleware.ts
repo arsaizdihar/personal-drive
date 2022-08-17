@@ -16,19 +16,5 @@ export async function middleware(request: NextRequest) {
     return NextResponse.redirect(`${url.origin}/login`);
   }
 
-  const valid = await fetch(`${url.origin}/api/check-auth`, {
-    credentials: "include",
-    headers: {
-      Cookie: "token=" + cookie,
-    },
-  })
-    .then((res) => res.json())
-    .catch((err) => {
-      console.log(err);
-      return false;
-    });
-  if (!valid) {
-    return NextResponse.redirect(`${url.origin}/login`);
-  }
   return NextResponse.next();
 }
