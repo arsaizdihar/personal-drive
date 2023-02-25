@@ -47,7 +47,7 @@ export const driveRouter = createRouter()
 
       const files = await s3
         .listObjectsV2({
-          Bucket: "ars",
+          Bucket: process.env.S3_BUCKET!,
           Prefix: prefix,
           Delimiter: "/",
         })
@@ -144,7 +144,7 @@ export const driveRouter = createRouter()
       const key = `${app.name}${path}${input.name}/`;
       const result = await s3
         .upload({
-          Bucket: "ars",
+          Bucket: process.env.S3_BUCKET!,
           Key: key,
           Body: "",
         })
@@ -189,7 +189,7 @@ export const driveRouter = createRouter()
       const key = `${app.name}${path}${input.name}`;
       const result = await s3
         .deleteObject({
-          Bucket: "ars",
+          Bucket: process.env.S3_BUCKET!,
           Key: key,
         })
         .promise();

@@ -49,7 +49,7 @@ export default async function handler(
     const fileStream = fs.createReadStream(file.filepath);
     const result = await s3
       .upload({
-        Bucket: "ars",
+        Bucket: process.env.S3_BUCKET!,
         Key: `${app.name}/${path}${file.originalFilename}`,
         Body: fileStream,
         ACL: "public-read",
