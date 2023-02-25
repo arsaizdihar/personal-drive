@@ -66,7 +66,7 @@ export const driveRouter = createRouter()
         folders: folders.map((folder) => folder.Prefix!.replace(prefix, "")),
         files: contents.map((file) => ({
           name: file.Key!.replace(prefix, ""),
-          link: `https://ars.is3.cloudhost.id/${file.Key}`,
+          link: `https://${process.env.S3_BUCKET}.is3.cloudhost.id/${file.Key}`,
         })),
       };
     },
