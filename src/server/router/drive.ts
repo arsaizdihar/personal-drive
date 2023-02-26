@@ -66,7 +66,7 @@ export const driveRouter = createRouter()
         folders: folders.map((folder) => folder.Prefix!.replace(prefix, "")),
         files: contents.map((file) => ({
           name: file.Key!.replace(prefix, ""),
-          link: `https://${process.env.S3_BUCKET}.${process.env.S3_PUBLIC_ENDPOINT}/${file.Key}`,
+          link: `https://${process.env.S3_BUCKET}.${process.env.S3_PUBLIC_DOMAIN}/${file.Key}`,
         })),
       };
     },
