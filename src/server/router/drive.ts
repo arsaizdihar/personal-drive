@@ -66,7 +66,7 @@ export const driveRouter = createRouter()
         folders: folders.map((folder) => folder.Prefix!.replace(prefix, "")),
         files: contents.map((file) => ({
           name: file.Key!.replace(prefix, ""),
-          link: `https://${process.env.S3_BUCKET}.is3.cloudhost.id/${file.Key}`,
+          link: `https://${process.env.S3_BUCKET}.${process.env.S3_PUBLIC_ENDPOINT}/${file.Key}`,
         })),
       };
     },
@@ -168,7 +168,7 @@ export const driveRouter = createRouter()
       }
       const path = input.path ? "/" + input.path : "/";
       const key = `${app.name}${path}${input.name}/`;
-      const count = await deleteRecursive("ars", key);
+      const count = await deleteRecursive(process.env.S3_BUCKET!, key);
       return count;
     },
   })
